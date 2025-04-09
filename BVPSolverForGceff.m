@@ -1,15 +1,8 @@
-clear all
-close all
-clc
-
-% IMPORTANT: This uses h/2 on the right-hand side for quadratic elements
-warning('off')
-
 %% Script parameters
 global ls h b Gcint Gcbulk Gceff E nu alpha1 alpha2
 E = 126e9; % Young's modulus (Pa)
 nu = 0.3; % Poisson's ratio
-ls = 110e-6; % length scale (m)
+ls = 120e-6; % length scale (m)
 b = 0.05e-3; % half interface thickness (m)
 Gcint = 281; % interface fracture toughness (N/m)
 Gcbulk = 5*Gcint; % bulk fracture toughness (N/m)
