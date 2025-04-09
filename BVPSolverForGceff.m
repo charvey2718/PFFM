@@ -2,47 +2,47 @@ clear all
 close all
 clc
 
-% IMPORTANT: This uses h/2 on the right-hand sand for quadratic elements
+% IMPORTANT: This uses h/2 on the right-hand side for quadratic elements
 warning('off')
 
 %% Script parameters
-global ls h hi Gcint Gcbulk Gceff E nu alpha1 alpha2
+global ls h b Gcint Gcbulk Gceff E nu alpha1 alpha2
 E = 126e9; % Young's modulus (Pa)
 nu = 0.3; % Poisson's ratio
-ls = 20e-6; % length scale (m)
-hi = 0.05e-3; % half interface thickness (m)
+ls = 110e-6; % length scale (m)
+b = 0.05e-3; % half interface thickness (m)
 Gcint = 281; % interface fracture toughness (N/m)
-Gcbulk = 10*Gcint; % bulk fracture toughness (N/m)
-h = hi/20; % interface element size (m)
+Gcbulk = 5*Gcint; % bulk fracture toughness (N/m)
+h = b/10; % interface element size (m)
 Gctol = 0.01; % Iterate until Gceff converges to within this tolerance
 
 %% Yoshioka et al. (2021) as initial guess for ODE solver
-Gceff = ((Gcbulk^2*h^2*exp((2*h)/ls) + Gcint^2*h^2*exp((2*h)/ls) + Gcbulk^2*h^2*exp((4*hi)/ls) + Gcint^2*h^2*exp((4*hi)/ls) + 4*Gcbulk^2*ls^2*exp((2*h)/ls) + 4*Gcint^2*ls^2*exp((2*h)/ls) + 4*Gcbulk^2*ls^2*exp((4*hi)/ls) + 4*Gcint^2*ls^2*exp((4*hi)/ls) - 2*Gcbulk^2*h^2*exp((h + 2*hi)/ls) + 2*Gcint^2*h^2*exp((h + 2*hi)/ls) + 8*Gcbulk^2*ls^2*exp((h + 2*hi)/ls) + 8*Gcint^2*ls^2*exp((h + 2*hi)/ls) - 2*Gcbulk*Gcint*h^2*exp((2*h)/ls) + 2*Gcbulk*Gcint*h^2*exp((4*hi)/ls) + 8*Gcbulk*Gcint*ls^2*exp((2*h)/ls) + 8*Gcbulk*Gcint*ls^2*exp((4*hi)/ls) - 4*Gcbulk^2*h*ls*exp((2*h)/ls) + 4*Gcint^2*h*ls*exp((2*h)/ls) + 4*Gcbulk^2*h*ls*exp((4*hi)/ls) + 4*Gcint^2*h*ls*exp((4*hi)/ls) - 48*Gcbulk*Gcint*ls^2*exp((h + 2*hi)/ls) + 8*Gcint^2*h*ls*exp((h + 2*hi)/ls) + 8*Gcbulk*Gcint*h*ls*exp((4*hi)/ls) - 24*Gcbulk*Gcint*h*ls*exp((h + 2*hi)/ls))^(1/2) + Gcbulk*h*exp(h/ls) + Gcint*h*exp(h/ls) - Gcbulk*h*exp((2*hi)/ls) + Gcint*h*exp((2*hi)/ls) - 2*Gcbulk*ls*exp(h/ls) + 2*Gcint*ls*exp(h/ls) - 2*Gcbulk*ls*exp((2*hi)/ls) + 2*Gcint*ls*exp((2*hi)/ls))/(2*h*exp(h/ls) + 2*h*exp((2*hi)/ls) - 4*ls*exp(h/ls) + 4*ls*exp((2*hi)/ls));
-alpha1 = (exp((hi - h/2)/ls)*(Gcbulk + Gceff))/(Gcbulk*exp((hi - h/2)/ls) - Gcbulk*exp(-(hi - h/2)/ls) + Gceff*exp((hi - h/2)/ls) + Gceff*exp(-(hi - h/2)/ls));
-alpha2 =(2*Gceff*exp((hi - h/2)/ls))/(Gcbulk*exp((hi - h/2)/ls) - Gcbulk*exp(-(hi - h/2)/ls) + Gceff*exp((hi - h/2)/ls) + Gceff*exp(-(hi - h/2)/ls));
+Gceff = ((Gcbulk^2*h^2*exp((2*h)/ls) + Gcint^2*h^2*exp((2*h)/ls) + Gcbulk^2*h^2*exp((4*b)/ls) + Gcint^2*h^2*exp((4*b)/ls) + 4*Gcbulk^2*ls^2*exp((2*h)/ls) + 4*Gcint^2*ls^2*exp((2*h)/ls) + 4*Gcbulk^2*ls^2*exp((4*b)/ls) + 4*Gcint^2*ls^2*exp((4*b)/ls) - 2*Gcbulk^2*h^2*exp((h + 2*b)/ls) + 2*Gcint^2*h^2*exp((h + 2*b)/ls) + 8*Gcbulk^2*ls^2*exp((h + 2*b)/ls) + 8*Gcint^2*ls^2*exp((h + 2*b)/ls) - 2*Gcbulk*Gcint*h^2*exp((2*h)/ls) + 2*Gcbulk*Gcint*h^2*exp((4*b)/ls) + 8*Gcbulk*Gcint*ls^2*exp((2*h)/ls) + 8*Gcbulk*Gcint*ls^2*exp((4*b)/ls) - 4*Gcbulk^2*h*ls*exp((2*h)/ls) + 4*Gcint^2*h*ls*exp((2*h)/ls) + 4*Gcbulk^2*h*ls*exp((4*b)/ls) + 4*Gcint^2*h*ls*exp((4*b)/ls) - 48*Gcbulk*Gcint*ls^2*exp((h + 2*b)/ls) + 8*Gcint^2*h*ls*exp((h + 2*b)/ls) + 8*Gcbulk*Gcint*h*ls*exp((4*b)/ls) - 24*Gcbulk*Gcint*h*ls*exp((h + 2*b)/ls))^(1/2) + Gcbulk*h*exp(h/ls) + Gcint*h*exp(h/ls) - Gcbulk*h*exp((2*b)/ls) + Gcint*h*exp((2*b)/ls) - 2*Gcbulk*ls*exp(h/ls) + 2*Gcint*ls*exp(h/ls) - 2*Gcbulk*ls*exp((2*b)/ls) + 2*Gcint*ls*exp((2*b)/ls))/(2*h*exp(h/ls) + 2*h*exp((2*b)/ls) - 4*ls*exp(h/ls) + 4*ls*exp((2*b)/ls));
+alpha1 = (exp((b - h/2)/ls)*(Gcbulk + Gceff))/(Gcbulk*exp((b - h/2)/ls) - Gcbulk*exp(-(b - h/2)/ls) + Gceff*exp((b - h/2)/ls) + Gceff*exp(-(b - h/2)/ls));
+alpha2 =(2*Gceff*exp((b - h/2)/ls))/(Gcbulk*exp((b - h/2)/ls) - Gcbulk*exp(-(b - h/2)/ls) + Gceff*exp((b - h/2)/ls) + Gceff*exp(-(b - h/2)/ls));
 fprintf('Yoshioka et al. (2021):\t%.2f\n', Gceff);
 
 %% Method 1
-[x, s, S, Gceff] = iterativelySolve(@f1, @bc, @guess_left, @guess_right, hi, h, ls, Gceff, Gcint, Gcbulk, Gctol);
+[x, s, S, Gceff] = iterativelySolve(@f1, @bc, @guess_left, @guess_right, b, h, ls, Gceff, Gcint, Gcbulk, Gctol);
 fprintf('Method 1:\t%.2f\n', Gceff)
 
 %% Method 2
-[x, s, S, Gceff] = iterativelySolve(@f2, @bc, @guess_left, @guess_right, hi, h, ls, Gceff, Gcint, Gcbulk, Gctol);
+[x, s, S, Gceff] = iterativelySolve(@f2, @bc, @guess_left, @guess_right, b, h, ls, Gceff, Gcint, Gcbulk, Gctol);
 fprintf('Method 2:\t%.2f\n', Gceff)
 
 %% Method 3
-[x, s, S, Gceff] = iterativelySolve(@f3, @bc, @guess_left, @guess_right, hi, h, ls, Gceff, Gcint, Gcbulk, Gctol);
+[x, s, S, Gceff] = iterativelySolve(@f3, @bc, @guess_left, @guess_right, b, h, ls, Gceff, Gcint, Gcbulk, Gctol);
 fprintf('Method 3:\t%.2f\n', Gceff)
 
-function [x, s, S, Gceff] = iterativelySolve(f, bc, guess_left, guess_right, hi, h, ls, Gceff, Gcint, Gcbulk, Gctol)
+function [x, s, S, Gceff] = iterativelySolve(f, bc, guess_left, guess_right, b, h, ls, Gceff, Gcint, Gcbulk, Gctol)
     % The function f depends on Gceff, which is also being solved for. This
     % function therefore solves f iteratively, updating Gceff each time,
     % until Gceff is within tolerance.
 
-    xmesh_left = [linspace(0, hi, 10000), linspace(hi, 20*hi, 10000)]; % starting from 0
+    xmesh_left = [linspace(0, b, 10000), linspace(b, 20*b, 10000)]; % starting from 0
     solinit_left = bvpinit(xmesh_left, guess_left);
     
-    xmesh_right = [linspace(h/2, hi, 10000), linspace(hi, 20*hi, 10000)];
+    xmesh_right = [linspace(h/2, b, 10000), linspace(b, 20*b, 10000)];
     solinit_right = bvpinit(xmesh_right, guess_right);
 
     options = bvpset('RelTol', 1e-9, 'AbsTol', 1e-9);
@@ -51,7 +51,7 @@ function [x, s, S, Gceff] = iterativelySolve(f, bc, guess_left, guess_right, hi,
         sol_right = bvp4c(f, bc, solinit_right, options);
         x = [-flipud(sol_left.x'); sol_right.x'];
         s = [flipud(sol_left.y(1,:)'); sol_right.y(1,:)'];
-        DeltaGceff = Gceff_from_sProfile(x, s, hi, ls, h, Gcint, Gcbulk) - Gceff; % change in Gceff
+        DeltaGceff = Gceff_from_sProfile(x, s, b, ls, h, Gcint, Gcbulk) - Gceff; % change in Gceff
         Gceff = Gceff + DeltaGceff; % update Gceff
         if abs(DeltaGceff) < Gctol % is Gceff within tolerance?
             break;
@@ -151,15 +151,15 @@ function g = guess_right(x, ~)
     end
 end
 
-function Gceff = Gceff_from_sProfile(x, s, hi, ls, h, Gcint, Gcbulk)
+function Gceff = Gceff_from_sProfile(x, s, b, ls, h, Gcint, Gcbulk)
     % Apply the energy balance equation to compute Gceff.
 
     B = unique([x s],'rows');
     x = B(:,1); s = B(:,2);
 
-    bulk_left  = x < -hi;
-    intf  = abs(x) <= hi;
-    bulk_right = x > hi;
+    bulk_left  = x < -b;
+    intf  = abs(x) <= b;
+    bulk_right = x > b;
     
     ds_dx = gradient(s)./gradient(x);
     S = 1/2*((1 - s).^2/ls + ls*ds_dx.^2);
