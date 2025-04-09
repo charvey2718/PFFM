@@ -17,20 +17,10 @@ h = hi/20; % interface element size (m)
 Gctol = 0.01; % Iterate until Gceff converges to within this tolerance
 
 %% Yoshioka et al. (2021) as initial guess for ODE solver
-global alpha1 alpha2
 Gceff = ((Gcbulk^2*h^2*exp((2*h)/ls) + Gcint^2*h^2*exp((2*h)/ls) + Gcbulk^2*h^2*exp((4*hi)/ls) + Gcint^2*h^2*exp((4*hi)/ls) + 4*Gcbulk^2*ls^2*exp((2*h)/ls) + 4*Gcint^2*ls^2*exp((2*h)/ls) + 4*Gcbulk^2*ls^2*exp((4*hi)/ls) + 4*Gcint^2*ls^2*exp((4*hi)/ls) - 2*Gcbulk^2*h^2*exp((h + 2*hi)/ls) + 2*Gcint^2*h^2*exp((h + 2*hi)/ls) + 8*Gcbulk^2*ls^2*exp((h + 2*hi)/ls) + 8*Gcint^2*ls^2*exp((h + 2*hi)/ls) - 2*Gcbulk*Gcint*h^2*exp((2*h)/ls) + 2*Gcbulk*Gcint*h^2*exp((4*hi)/ls) + 8*Gcbulk*Gcint*ls^2*exp((2*h)/ls) + 8*Gcbulk*Gcint*ls^2*exp((4*hi)/ls) - 4*Gcbulk^2*h*ls*exp((2*h)/ls) + 4*Gcint^2*h*ls*exp((2*h)/ls) + 4*Gcbulk^2*h*ls*exp((4*hi)/ls) + 4*Gcint^2*h*ls*exp((4*hi)/ls) - 48*Gcbulk*Gcint*ls^2*exp((h + 2*hi)/ls) + 8*Gcint^2*h*ls*exp((h + 2*hi)/ls) + 8*Gcbulk*Gcint*h*ls*exp((4*hi)/ls) - 24*Gcbulk*Gcint*h*ls*exp((h + 2*hi)/ls))^(1/2) + Gcbulk*h*exp(h/ls) + Gcint*h*exp(h/ls) - Gcbulk*h*exp((2*hi)/ls) + Gcint*h*exp((2*hi)/ls) - 2*Gcbulk*ls*exp(h/ls) + 2*Gcint*ls*exp(h/ls) - 2*Gcbulk*ls*exp((2*hi)/ls) + 2*Gcint*ls*exp((2*hi)/ls))/(2*h*exp(h/ls) + 2*h*exp((2*hi)/ls) - 4*ls*exp(h/ls) + 4*ls*exp((2*hi)/ls));
 alpha1 = (exp((hi - h/2)/ls)*(Gcbulk + Gceff))/(Gcbulk*exp((hi - h/2)/ls) - Gcbulk*exp(-(hi - h/2)/ls) + Gceff*exp((hi - h/2)/ls) + Gceff*exp(-(hi - h/2)/ls));
 alpha2 =(2*Gceff*exp((hi - h/2)/ls))/(Gcbulk*exp((hi - h/2)/ls) - Gcbulk*exp(-(hi - h/2)/ls) + Gceff*exp((hi - h/2)/ls) + Gceff*exp(-(hi - h/2)/ls));
 fprintf('Yoshioka et al. (2021):\t%.2f\n', Gceff);
-
-%% Yoshioka et al. (2021)
-% Gceff = Gcint; % initial guess
-% alpha1 = (exp((hi - h/2)/ls)*(Gcbulk + Gceff))/(Gcbulk*exp((hi - h/2)/ls) - Gcbulk*exp(-(hi - h/2)/ls) + Gceff*exp((hi - h/2)/ls) + Gceff*exp(-(hi - h/2)/ls));
-% alpha2 = (2*Gceff*exp((hi - h/2)/ls))/(Gcbulk*exp((hi - h/2)/ls) - Gcbulk*exp(-(hi - h/2)/ls) + Gceff*exp((hi - h/2)/ls) + Gceff*exp(-(hi - h/2)/ls));
-% [x, s, S, Gceff] = iterativelySolve(@f0, @bc, @guess_left, @guess_right, hi, h, ls, Gceff, Gcint, Gcbulk, Gctol);
-% alpha1 = (exp((hi - h/2)/ls)*(Gcbulk + Gceff))/(Gcbulk*exp((hi - h/2)/ls) - Gcbulk*exp(-(hi - h/2)/ls) + Gceff*exp((hi - h/2)/ls) + Gceff*exp(-(hi - h/2)/ls));
-% alpha2 = (2*Gceff*exp((hi - h/2)/ls))/(Gcbulk*exp((hi - h/2)/ls) - Gcbulk*exp(-(hi - h/2)/ls) + Gceff*exp((hi - h/2)/ls) + Gceff*exp(-(hi - h/2)/ls));
-% fprintf('Yoshioka et al. (2021):\t%.2f\n', Gceff)
 
 %% Method 1
 [x, s, S, Gceff] = iterativelySolve(@f1, @bc, @guess_left, @guess_right, hi, h, ls, Gceff, Gcint, Gcbulk, Gctol);
@@ -70,14 +60,6 @@ function [x, s, S, Gceff] = iterativelySolve(f, bc, guess_left, guess_right, hi,
 
     dsdx = gradient(s)./gradient(x);
     S = 1/2*((1 - s).^2/ls + ls*dsdx.^2); % surface energy density function
-end
-
-function dsdx = f0(x, s, region)
-    % The ODE to be solved from Yoshioka et al. (2021).
-
-    global ls
-    dsdx(1, 1) = s(2);
-    dsdx(2, 1) = (s(1) - 1)/ls^2;
 end
 
 function dsdx = f1(x, s, region)
