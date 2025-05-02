@@ -2,6 +2,7 @@
 #define DCB2D_H
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <fstream>
 #include <iomanip>

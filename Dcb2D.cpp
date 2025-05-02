@@ -8,14 +8,14 @@ int main()
 	double h2 = 2e-3; // height of lower DCB arm (m)
 	double hi = 1e-4; // height of interface (m)
 	double a0 = 0.03; // initial crack length (m)
-	double ls = 40e-6; // length scale (m)
+	double ls = 80e-6; // length scale (m)
 	double t = 1; // thickness (m)
 	
 	// Material properties
 	double E_int = 126.e9; // interface Young's modulus (Pa)
 	double nu_int = 0.3; // interface Poisson's ratio
 	double Gc_int = 281.; // interface fracture toughness (N/m) for beam theory calculation only
-	double Gc_eff = 238.4; // effective interface fracture toughness (N/m) for FEM only
+	double Gc_eff = 167; // effective interface fracture toughness (N/m) for FEM only
 	double E_bulk = 126.e9; // interface Young's modulus (Pa)
 	double nu_bulk = 0.3; // interface Poisson's ratio
 	double Gc_bulk = 10.*Gc_int; // bulk fracture toughness (N/m)
@@ -23,12 +23,14 @@ int main()
 	
 	// Mesh properties
 	double Delta_y = L/4000; // initial element length
-	double Delta_y_max = L/25.; // max element length
-	double GR_y = 1.1; // growth rate of element length
-	double Delta = hi/20; // interface element height
+	double Delta_y_max_ahead = L/10.; // max element length
+	double Delta_y_max_behind = 1e-4; // max element length behind crack tip
+	double GR_y_ahead = 1.1; // growth rate of element length ahead of crack tip
+	double GR_y_behind = 1.2; // growth rate of element length behind crack tip
+	double Delta = hi/24; // interface element height
 	double Delta_x = Delta; // initial element height in bulk
-	double Delta_x_max = h1/4.; // max element height in bulk
-	double yminus = 3e-3; // length of refined region ahead of crack tip
+	double Delta_x_max = h1/10.; // max element height in bulk
+	double yminus = 1.5e-3; // length of refined region ahead of crack tip
 	double yplus = 1e-3; // length of refined region behind crack tip
 	double xplus = hi/2; // length of refined region above interface
 	double xminus = hi/2; // length of refined region below interface
@@ -40,7 +42,7 @@ int main()
 	double tol = 1e-7; // Newton's method convergence tolerance
 	double relax = 1.; // fraction of the increment to apply each iteration
 	double a_min = a0 + 1e-4; // minimum crack length (m) before compliance calibration is started
-	int save_freq = 100; // Number of increments per files getting saved per increment (1 = every increment, 2 = even increments, etc.)
+	int save_freq = 1; // Number of increments per files getting saved (1 = every increment, 2 = even increments, etc.)
 	int restart_from = 0; // Iteration number to restart from
 	
 	// output files
@@ -49,13 +51,8 @@ int main()
 	std::string history_filename = "history.csv";
 	int prec = 16; // number of digits after the decimal point
 	
-	// Make coarse
-	// Delta_y *= 10;
-	// Delta_x *= 10;
-	// Delta *= 2;
-	
 	// Loading
-	double Dinit = 1.2e-3; // initial displacement (m)
+	double Dinit = 1.206e-3; // initial displacement (m)
 	double Dend = 6e-3; // applied displacement (m)
 	double Dinc = 12.5e-9; // initial displacement increment (m)
 	
@@ -64,7 +61,7 @@ int main()
 	/* CREATE MESH */
 	/***************/
 	// x coordinates from support to refined region
-	std::vector<double> x1 = linspace2(0, L - a0 - yminus, Delta_y, GR_y, Delta_y_max);
+	std::vector<double> x1 = linspace2(0, L - a0 - yminus, Delta_y, GR_y_ahead, Delta_y_max_ahead);
 	std::reverse(x1.begin(), x1.end());
 	for(auto& elem : x1)
 	{
@@ -74,7 +71,7 @@ int main()
 	
 	std::vector<double> x2 = linspace(L - a0 - yminus, L - a0, Delta_y); // x coordinates in refined region ahead of crack tip
 	std::vector<double> x3 = linspace(L - a0, L - a0 + yplus, Delta_y); // x coordinates in refined region behind of crack tip
-	std::vector<double> x4 = linspace2(L - a0 + yplus, L, Delta_y, GR_y, Delta_y_max); // x coordinates in cracked region
+	std::vector<double> x4 = linspace2(L - a0 + yplus, L, Delta_y, GR_y_behind, Delta_y_max_behind); // x coordinates in cracked region
 	
 	std::vector<double> y6 = linspace2(h2 + hi + xplus, h2 + hi + h1, Delta_x, GR_x, Delta_x_max); // y coordinates in upper arm
 	std::vector<double> y5 = linspace(h2 + hi, h2 + hi + xplus, Delta); // y coordinates in refined region above interface
@@ -344,6 +341,7 @@ int main()
 	/***********************/
 	for(double D = Dinit; D <= Dend + Dinc/10; D += Dinc) // apply displacement incrementally
 	{
+		auto t1 = std::chrono::high_resolution_clock::now();
 		printf("Increment number: %d\n", incr_count);
 		printf(("Applied displacement: %." + std::to_string(prec) + "f\n").c_str(), D);
 		
@@ -452,19 +450,21 @@ int main()
 				
 				// beam theory
 				double Etheory = isPlaneStress ? E_bulk : E_bulk/(1. - nu_bulk*nu_bulk);
-				double Dcrit = (2.*std::pow(6.*Gc_int*(h1 + h2)*(h1*h1 - h1*h2 + h2*h2), 0.5)*a0*a0)/(3.*std::pow(Etheory, 0.5)*std::pow(h1*h2, 1.5));
+				double h1i = h1 + hi/2; // thickness of upper arm including half interface
+				double h2i = h2 + hi/2; // thickness of lower arm including half interface
+				double Dcrit = (2.*std::pow(6.*Gc_int*(h1i + h2i)*(h1i*h1i - h1i*h2i + h2i*h2i), 0.5)*a0*a0)/(3.*std::pow(Etheory, 0.5)*std::pow(h1i*h2i, 1.5));
 				if(D > Dcrit)
 				{
-					G_beamtheory.push_back(Gc_int);
-					F1_beamtheory.push_back(+(std::pow(6.*Etheory, 0.25)*std::pow(Gc_int*h1*h2, 0.75)*t)/(3.*std::pow(D, 0.5)*std::pow(h1*h1*h1 + h2*h2*h2, 0.25)));
-					F2_beamtheory.push_back(-(std::pow(6.*Etheory, 0.25)*std::pow(Gc_int*h1*h2, 0.75)*t)/(3.*std::pow(D, 0.5)*std::pow(h1*h1*h1 + h2*h2*h2, 0.25)));
-					a_theory.push_back(a0 + (std::pow(6.*Etheory, 0.25)*std::pow(D, 0.5)*std::pow(h1*h2, 0.75))/(2.*std::pow(Gc_int, 0.5)*std::pow(h1*h1*h1 + h2*h2*h2, 0.25)));
+					G_beamtheory.push_back(pow(27.*D*D*F1*F1*F1*F1*(h1i*h1i*h1i + h2i*h2i*h2i)/(2.*E_bulk*t*t*t*t*h1i*h1i*h1i*h2i*h2i*h2i), 1./3));
+					F1_beamtheory.push_back(+(std::pow(6.*Etheory, 0.25)*std::pow(Gc_int*h1i*h2i, 0.75)*t)/(3.*std::pow(D, 0.5)*std::pow(h1i*h1i*h1i + h2i*h2i*h2i, 0.25)));
+					F2_beamtheory.push_back(-(std::pow(6.*Etheory, 0.25)*std::pow(Gc_int*h1i*h2i, 0.75)*t)/(3.*std::pow(D, 0.5)*std::pow(h1i*h1i*h1i + h2i*h2i*h2i, 0.25)));
+					a_theory.push_back(a0 + (std::pow(6.*Etheory, 0.25)*std::pow(D, 0.5)*std::pow(h1i*h2i, 0.75))/(2.*std::pow(Gc_int, 0.5)*std::pow(h1i*h1i*h1i + h2i*h2i*h2i, 0.25)));
 				}
 				else
 				{
-					F1_beamtheory.push_back(+(D*Etheory*t*h1*h1*h1*h2*h2*h2)/(4.*a0*a0*a0*(h1*h1*h1 + h2*h2*h2)));
-					F2_beamtheory.push_back(-(D*Etheory*t*h1*h1*h1*h2*h2*h2)/(4.*a0*a0*a0*(h1*h1*h1 + h2*h2*h2)));
-					G_beamtheory.push_back((3.*D*D*Etheory*h1*h1*h1*h2*h2*h2)/(8.*a0*a0*a0*a0*(h1*h1*h1 + h2*h2*h2)));
+					F1_beamtheory.push_back(+(D*Etheory*t*h1i*h1i*h1i*h2i*h2i*h2i)/(4.*a0*a0*a0*(h1i*h1i*h1i + h2i*h2i*h2i)));
+					F2_beamtheory.push_back(-(D*Etheory*t*h1i*h1i*h1i*h2i*h2i*h2i)/(4.*a0*a0*a0*(h1i*h1i*h1i + h2i*h2i*h2i)));
+					G_beamtheory.push_back((3.*D*D*Etheory*h1i*h1i*h1i*h2i*h2i*h2i)/(8.*a0*a0*a0*a0*(h1i*h1i*h1i + h2i*h2i*h2i)));
 					a_theory.push_back(a0);
 				}
 				
@@ -530,7 +530,11 @@ int main()
 			outfile.close();
 		}
 
+		auto t2 = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> seconds = t2 - t1;
+		printf("Increment %d took %.3f seconds\n", incr_count, seconds.count());
 		std::cout << std::endl;
+		
 		++incr_count;
 	}
 
