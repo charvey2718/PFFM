@@ -20,11 +20,11 @@ alpha2 =(2*Gceff*exp((b - h/2)/ls))/(Gcbulk*exp((b - h/2)/ls) - Gcbulk*exp(-(b -
 fprintf('Yoshioka et al. (2021):\t%.2f\n', Gceff);
 
 %% Method 1
-[x, s, S, Gceff] = iterativelySolve(@f1, @bc, @guess_left, @guess_right, b, h, ls, Gcint, Gcbulk, Gctol);
+[x, s, S] = iterativelySolve(@f1, @bc, @guess_left, @guess_right, b, h, ls, Gcint, Gcbulk, Gctol);
 fprintf('Method 1:\t%.2f\n', Gceff)
 
 %% Method 2
-[x, s, S, Gceff] = iterativelySolve(@f2, @bc, @guess_left, @guess_right, b, h, ls, Gcint, Gcbulk, Gctol);
+[x, s, S] = iterativelySolve(@f2, @bc, @guess_left, @guess_right, b, h, ls, Gcint, Gcbulk, Gctol);
 fprintf('Method 2:\t%.2f\n', Gceff)
 
 %% Method 3
