@@ -50,7 +50,7 @@ function [x, s, S] = iterativelySolve(f, bc, guess_left, guess_right, b, h, ls, 
         sol_right = bvp4c(f, bc, solinit_right, options);
         x = [-flipud(sol_left.x'); sol_right.x'];
         s = [flipud(sol_left.y(1,:)'); sol_right.y(1,:)'];
-        DeltaGceff = Gceff_from_sProfile(x, s, b, ls, h, Gcint, Gcbulk) - Gceff % change in Gceff
+        DeltaGceff = Gceff_from_sProfile(x, s, b, ls, h, Gcint, Gcbulk) - Gceff; % change in Gceff
         Gceff = Gceff + DeltaGceff; % update Gceff
         if abs(DeltaGceff) < Gctol % is Gceff within tolerance?
             break;
