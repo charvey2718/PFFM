@@ -1,24 +1,31 @@
 # PFFM
 
-**PFFM** is a double cantilever beam phase-field model for interface fracture. The associated academic journal article is in review. Details will be added here in due course.
+- **`Dcb2D-ModeI.cpp` and `Dcb2D-ModeI.h`** contain C++ finite element method (FEM) code implementing a double cantilever beam phase-field model for interface fracture.
+
+- The diffuse phase-field damage interacts with the surrounding bulk material, which artificially increases the apparent interface fracture toughness (assuming the bulk material has a higher fracture toughness). This effect can be mitigated by using an *effective fracture toughness* value. 
+
+- **`BVPSolverForGceff.m`** is a MATLAB script that pre-computes the effective fracture toughness for PFFM simulations using various methods.
+
+The associated academic journal article is currently under review. Details will be added here in due course.
+
 
 ## Requirements
 
-To compile this code, you must include the [Eigen 3.4.0 header-only library](https://gitlab.com/libeigen/eigen/-/releases/3.4.0).  
+To compile the C++ code, you must include the [Eigen 3.4.0 header-only C++ library](https://gitlab.com/libeigen/eigen/-/releases/3.4.0), which provides linear algebra functionalities.
 More information about Eigen can be found on the [Eigen website](https://eigen.tuxfamily.org/index.php?title=Main_Page).
 
 ## Build
 
-The code has been successfully compiled on:
+The C++ code has been successfully compiled on:
 - **Windows 11** using **MinGW-W64 14.2.0**
 - **Ubuntu 20.04.6 LTS** using **GCC 9.4.0**
 
-You may compile the code using the provided `Makefile`:
+You may compile the C++ code using the provided `Makefile`:
 
 ```bash
 make modeI
 ```
-Ensure that the Eigen library path is correctly set in the Makefile or environment if it is not installed in a standard location.
+Ensure that the Eigen library path is correctly set in the `Makefile` or environment if it is not installed in a standard location.
 
 **Note:**  
 For best performance, the following compile flags for Eigen are recommended:  
@@ -38,4 +45,4 @@ See the [LICENSE](./LICENSE) file for details.
 
 ## Citation
 
-Once the article is published, citation info with be provided here so that the work can be properly referenced.
+Once the article is published, citation info will be provided here so that the work can be properly referenced.
