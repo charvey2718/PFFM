@@ -1,6 +1,6 @@
 # PFFM
 
-- **`Dcb2D-ModeI.cpp` and `Dcb2D-ModeI.h`** contain C++ finite element method (FEM) code implementing a double cantilever beam phase-field model for interface fracture.
+- **`Dcb2D-ModeI.cpp` and `Dcb2D-ModeI.h`** contain C++ code implementing a finite-element method (FEM) model of a double cantilever beam, which uses the phase-field fracture model for interface fracture propagation.
 
 - The diffuse phase-field damage interacts with the surrounding bulk material, which artificially increases the apparent interface fracture toughness (assuming the bulk material has a higher fracture toughness). This effect can be mitigated by using an *effective fracture toughness* value. 
 
