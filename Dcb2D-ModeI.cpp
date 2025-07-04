@@ -17,8 +17,8 @@ int main()
 	double nu_int = 0.3; // interface Poisson's ratio
 	double Gc_int = 281.; // interface fracture toughness for beam theory calculation only
 	double Gc_eff = 255.44; // effective interface fracture toughness for FEM only
-	double E_bulk = 126.e9; // interface Young's modulus
-	double nu_bulk = 0.3; // interface Poisson's ratio
+	double E_bulk = 126.e9; // bulk Young's modulus
+	double nu_bulk = 0.3; // bulk Poisson's ratio
 	double Gc_bulk = 10.*Gc_int; // bulk fracture toughness
 	bool isPlaneStress = true; // if false, plane strain
 	
