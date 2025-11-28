@@ -6,7 +6,7 @@
 
 - **`BVPSolverForGceff.m`** is a MATLAB script that pre-computes the effective fracture toughness for PFFM simulations using various methods.
 
-The associated academic journal article is currently under review. Details will be added here in due course.
+The associated academic journal article is available [here](https://doi.org/10.1016/j.engfracmech.2025.111546).
 
 
 ## Requirements
@@ -45,4 +45,4 @@ See the [LICENSE](./LICENSE) file for details.
 
 ## Citation
 
-Once the article is published, citation info will be provided here so that the work can be properly referenced.
+C. A. Fear, S. Wang, C. M. Harvey (2025), [Effective fracture toughness in phase-field models for interface fracture](https://doi.org/10.1016/j.engfracmech.2025.111546), Engineering Fracture Mechanics (328), 111546.
