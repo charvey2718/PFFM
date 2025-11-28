@@ -90,12 +90,12 @@ function dsdx = f3(x, s, region)
     % Calculate k from sharp crack theory
     switch region
         case 1
-            k = -(Gcint*(nu - 3))/(4*Gceff*ls*pi*abs(x)*s(1));
+            k = -(Gcint*(nu - 3))/(4*Gceff*ls*pi*abs(x)*s(1)); % N.B: This is the corrected form vs the paper
         case 2
-            k = -(Gcint*(nu - 3))/(4*Gcbulk*ls*pi*abs(x)*s(1));
+            k = -(Gcint*(nu - 3))/(4*Gcbulk*ls*pi*abs(x)*s(1)); % N.B: This is the corrected form vs the paper
     end
     % Limit k to kmax
-    kmax = -(Gcint*(nu - 3))/(4*Gceff*ls*pi*abs(h/2));
+    kmax = -(Gcint*(nu - 3))/(4*Gceff*ls*pi*abs(h/2)); % N.B: This is the corrected form vs the paper
     if k > kmax
         k = kmax;
     end
@@ -162,3 +162,4 @@ function Gceff = Gceff_from_sProfile(x, s, b, ls, Gcint, Gcbulk)
 
     Gceff = (Gcint - Gcbulk*trapz(x(bulk_left), S(bulk_left)) - Gcbulk*trapz(x(bulk_right), S(bulk_right)))/trapz(x(intf), S(intf));
 end
+
