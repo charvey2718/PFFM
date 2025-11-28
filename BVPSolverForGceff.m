@@ -85,19 +85,17 @@ end
 
 function dsdx = f3(x, s, region)
     % The ODE to be solved from method 3.
-
     global ls Gceff Gcint Gcbulk nu h
     
     % Calculate k from sharp crack theory
     switch region
         case 1
-            k = (11 - 5*nu)/(16*ls*pi*x*s(1))*Gcint/Gceff;
+            k = -(Gcint*(nu - 3))/(4*Gceff*ls*pi*abs(x)*s(1));
         case 2
-            k = (11 - 5*nu)/(16*ls*pi*x*s(1))*Gcint/Gcbulk;
+            k = -(Gcint*(nu - 3))/(4*Gcbulk*ls*pi*abs(x)*s(1));
     end
-
     % Limit k to kmax
-    kmax = Gcint*(11 - 5*nu)/16/Gceff/ls/pi/(h/2);
+    kmax = -(Gcint*(nu - 3))/(4*Gceff*ls*pi*abs(h/2));
     if k > kmax
         k = kmax;
     end
